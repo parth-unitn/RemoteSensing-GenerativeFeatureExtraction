@@ -16,7 +16,7 @@ from scipy import stats
 import pandas as pd
 import numpy as np
 import matplotlib
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import argparse
 import os
 from sklearn.manifold import MDS
@@ -146,16 +146,15 @@ outputs = decoder(encoder([input_x,input_r])[2])
 vae = Model([input_x,input_r], outputs, name='vae_mlp')
 vae.summary()
     
-##Customize Lost Function of the VAE Model
+##Customize Loss Function of the VAE Model
 
 models = (encoder, decoder)
 
-#reconstruction_loss = K.tf.divide(0.5*K.sum(K.square(inputs_x-outputs), axis=-1), K.exp(outputs_var)) + 0.5*original_dim*outputs_var
 reconstruction_loss = mse(input_x,outputs)
 
-#kl_loss = 1 + z_log_var - pz_log_var - tf.divide(K.square(z_mean-pz_mean),K.exp(pz_log_var)) - tf.divide(K.exp(z_log_var),K.exp(pz_log_var))
 kl_loss = 1 + z_log_var - K.square(z_mean-pz_mean) - K.exp(z_log_var)
 kl_loss = -0.5*K.sum(kl_loss, axis=-1)
+
 label_loss = tf.divide(0.5*K.square(r_mean - input_r), K.exp(r_log_var)) +  0.5 * r_log_var
 
 vae_loss = K.mean(reconstruction_loss+kl_loss+label_loss)
@@ -172,7 +171,7 @@ np.random.seed(0)
 skf = StratifiedKFold(n_splits=5)
 pred = np.zeros((ground_truth_r.shape))
 fake = np.zeros((ground_truth_r.shape[0]))
-fake[:114] = 1
+fake[:num_train] = 1
 
 
 # Run 5-fold CV
